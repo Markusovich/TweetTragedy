@@ -36,7 +36,15 @@
             </li>
         </ul>
         <form class="form-inline my-6 my-lg-0" action='/' method='POST'>
-            <input class="form-control mr-sm-2" type="text" name="daterange" value="01/02/2021 - 01/03/2021" size="22">
+            <select class="form-control mr-sm-2" type="date" name="daterange">
+                <option class="dropdown-item" value="2" selected>Last Day</option>
+                <option class="dropdown-item" value="3">Last 2 Days</option>
+                <option class="dropdown-item" value="4">Last 3 Days</option>
+                <option class="dropdown-item" value="5">Last 4 Days</option>
+                <option class="dropdown-item" value="6">Last 5 Days</option>
+                <option class="dropdown-item" value="7">Last 6 Days</option>
+                <option class="dropdown-item" value="8">Last Week</option>
+            </select>
             <input class="form-control mr-sm-2" type="searchLocation" name="searchLocation"
                 placeholder="Location (optional)" aria-label="SearchLocation">
             <input class="form-control mr-sm-2" type="searchDisaster" name="searchDisaster" placeholder="Disaster"
