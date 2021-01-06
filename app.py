@@ -52,7 +52,6 @@ def get_tweets(searchWord, location, date1, date2):
     tweets = tw.Cursor(api.search,
                        q=searchWord,
                        lang="en",
-                       result_type="recent",
                        since=date1,
                        until=date2).items(500)
 
@@ -172,7 +171,7 @@ def home():
             p3.join()
             p4.join()
 
-        return render_template('home.html', beginDate=beginDate, firstquarterDate=firstquarterDate, middleDate=middleDate, thirdquarterDate=thirdquarterDate, endDate=endDate)
+        return render_template('home.html')
     else:
         return render_template('home.html')
 
