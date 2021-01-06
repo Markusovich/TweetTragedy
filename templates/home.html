@@ -2,6 +2,11 @@
 
 {% block head %}
 <title>Home</title>
+<style>
+    #loading {
+        display: none;
+    }
+</style>
 {% endblock %}
 
 {% block body %}
@@ -49,9 +54,29 @@
                 placeholder="Location (optional)" aria-label="SearchLocation">
             <input class="form-control mr-sm-2" type="searchDisaster" name="searchDisaster" placeholder="Disaster"
                 aria-label="SearchDisaster" required>
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            <button onclick="loadingFunction()" onsubmit="doneFunction()" class="btn btn-outline-success my-2 my-sm-0"
+                type="submit">Search</button>
         </form>
     </div>
 </nav>
+
+
+<script>
+    function loadingFunction() {
+        document.getElementById('loading').style.display = 'block';
+    }
+    function doneFunction() {
+        document.getElementById('loading').style.display = 'none';
+        //Create heatmap here?
+    }   
+</script>
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<div class="d-flex justify-content-center">
+    <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status" id="loading">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
 
 {% endblock %}

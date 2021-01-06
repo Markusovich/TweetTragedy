@@ -53,7 +53,7 @@ def get_tweets(searchWord, location, date1, date2):
                        q=searchWord,
                        lang="en",
                        since=date1,
-                       until=date2).items(500)
+                       until=date2).items(1)
 
     client = MongoClient(MONGO_HOST)
     db = client.twitterdb
