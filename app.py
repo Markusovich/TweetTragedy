@@ -44,7 +44,7 @@ def model_prediction(text):
     return true > false
 
 
-def get_tweets(searchWord, location, date1, date2):
+def get_tweets(searchWord, location, date1, date2, count):
 
     searchWord += " -filter:retweets" + " -filter:replies"
 
@@ -53,7 +53,7 @@ def get_tweets(searchWord, location, date1, date2):
                        q=searchWord,
                        lang="en",
                        since=date1,
-                       until=date2).items(1)
+                       until=date2).items(count)
 
     client = MongoClient(MONGO_HOST)
     db = client.twitterdb
@@ -61,7 +61,7 @@ def get_tweets(searchWord, location, date1, date2):
     # Iterate and print tweets
     for tweet in tweets:
         if location:
-            if location in tweet._json['user']['location']:
+            if location in tweet._json['user']['location'] or tweet._json['place']['country'] or tweet._json['place']['name']:
                 if model_prediction(tweet._json['text']):
                     db.tweets.insert_one(tweet._json)
         else:
@@ -97,43 +97,43 @@ def home():
 
         if dateRange == 2:
             p1 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, beginDate, endDate))
+                disasterName, locationName, beginDate, endDate, 1000))
             p1.start()
             p1.join()
         if dateRange == 3:
             p1 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, beginDate, middleDate))
+                disasterName, locationName, beginDate, middleDate, 500))
             p2 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, middleDate, endDate))
+                disasterName, locationName, middleDate, endDate, 500))
             p1.start()
             p2.start()
             p1.join()
             p2.join()
         if dateRange == 4:
             p1 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, beginDate, middleDate))
+                disasterName, locationName, beginDate, middleDate, 500))
             p2 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, middleDate, endDate))
+                disasterName, locationName, middleDate, endDate, 500))
             p1.start()
             p2.start()
             p1.join()
             p2.join()
         if dateRange == 5:
             p1 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, beginDate, middleDate))
+                disasterName, locationName, beginDate, middleDate, 500))
             p2 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, middleDate, endDate))
+                disasterName, locationName, middleDate, endDate, 500))
             p1.start()
             p2.start()
             p1.join()
             p2.join()
         if dateRange == 6:
             p1 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, beginDate, firstthirdDate))
+                disasterName, locationName, beginDate, firstthirdDate, 333))
             p2 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, firstthirdDate, secondthirdDate))
+                disasterName, locationName, firstthirdDate, secondthirdDate, 333))
             p3 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, secondthirdDate, endDate))
+                disasterName, locationName, secondthirdDate, endDate, 333))
             p1.start()
             p2.start()
             p3.start()
@@ -142,11 +142,11 @@ def home():
             p3.join()
         if dateRange == 7:
             p1 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, beginDate, firstthirdDate))
+                disasterName, locationName, beginDate, firstthirdDate, 333))
             p2 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, firstthirdDate, secondthirdDate))
+                disasterName, locationName, firstthirdDate, secondthirdDate, 333))
             p3 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, secondthirdDate, endDate))
+                disasterName, locationName, secondthirdDate, endDate, 333))
             p1.start()
             p2.start()
             p3.start()
@@ -155,13 +155,13 @@ def home():
             p3.join()
         else:
             p1 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, beginDate, firstquarterDate))
+                disasterName, locationName, beginDate, firstquarterDate, 250))
             p2 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, firstquarterDate, middleDate))
+                disasterName, locationName, firstquarterDate, middleDate, 250))
             p3 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, middleDate, thirdquarterDate))
+                disasterName, locationName, middleDate, thirdquarterDate, 250))
             p4 = multiprocessing.Process(target=get_tweets, args=(
-                disasterName, locationName, thirdquarterDate, endDate))
+                disasterName, locationName, thirdquarterDate, endDate, 250))
             p1.start()
             p2.start()
             p3.start()
