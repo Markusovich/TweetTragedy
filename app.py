@@ -10,8 +10,27 @@ import logging
 import multiprocessing
 from datetime import datetime, timedelta
 import pickle
+from flask_sqlalchemy import SQLAlchemy
+import os
 
 app = Flask(__name__)
+
+
+# Setting the connection to the database we will use
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tweets.db'
+# Setting the database var
+db2 = SQLAlchemy(app)
+
+class Tweets(db2.Model):
+    id = db2.Column(db2.Integer, primary_key=True)
+    date_created = db2.Column(db2.String(100), nullable=False)
+    text = db2.Column(db2.String(300), nullable=False)
+    location = db2.Column(db2.String(100), nullable=True)
+
+from app import db2
+from app import Tweets
+db2.drop_all()
+db2.create_all()
 
 # Link to Simon's database in mongodb atlas
 MONGO_HOST = 'mongodb+srv://markusovich:Alexmom99@cluster0.enna3.mongodb.net/twitterdb?retryWrites=true&w=majority'
@@ -61,12 +80,18 @@ def get_tweets(searchWord, location, date1, date2, count):
     # Iterate and print tweets
     for tweet in tweets:
         if location:
-            if location in tweet._json['user']['location'] or tweet._json['place']['country'] or tweet._json['place']['name']:
+            if location in tweet._json['user']['location']:
                 if model_prediction(tweet._json['text']):
                     db.tweets.insert_one(tweet._json)
+
+                    db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text'], location=tweet._json['user']['location']))
+                    db2.session.commit()
         else:
             if model_prediction(tweet._json['text']):
                 db.tweets.insert_one(tweet._json)
+
+                db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text']))
+                db2.session.commit()
 
 
 @app.route("/", methods=['GET', 'POST'])
@@ -171,7 +196,10 @@ def home():
             p3.join()
             p4.join()
 
-        return render_template('home.html')
+        all_tweets = Tweets.query.order_by(Tweets.date_created).all()
+        tweetTitle = 'Tweets that may provide info to current state'
+
+        return render_template('home.html', all_tweets=all_tweets, tweetTitle=tweetTitle)
     else:
         return render_template('home.html')
 
