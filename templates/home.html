@@ -4,21 +4,20 @@
 <title>Home</title>
 <style>
     body {
-            background-image: url("https://wallpaperaccess.com/full/713555.jpg");
-            background-repeat: no-repeat;
-            background-size: 1700px 1000px;
-        }
+        background-image: url("https://wallpaperaccess.com/full/713555.jpg");
+        background-repeat: no-repeat;
+        background-size: 1700px 1000px;
+    }
+
     #loading {
         display: none;
     }
+
 </style>
 <script>
     function loadingFunction() {
-        document.getElementById('loading').style.display = 'block';
+        document.getElementById("loading").style.display = "block";
     }
-    function doneFunction() {
-        document.getElementById('loading').style.display = 'none';
-    }   
 </script>
 {% endblock %}
 
@@ -67,33 +66,40 @@
                 placeholder="Location (optional)" aria-label="SearchLocation" value="{{ request.form.searchLocation }}">
             <input class="form-control mr-sm-2" type="searchDisaster" name="searchDisaster" placeholder="Disaster"
                 aria-label="SearchDisaster" value="{{ request.form.searchDisaster }}" required>
-            <button onclick="loadingFunction()" onsubmit="doneFunction()" class="btn btn-outline-success my-2 my-sm-0"
+            <button onclick="loadingFunction()" class="btn btn-outline-success my-2 my-sm-0"
                 type="submit" action='/' method='POST'>Search</button>
         </form>
     </div>
 </nav>
 
 {% if tweetTitle %}
-<br><br><br><br>
-<h2><b>{{ tweetTitle }}</b></h2>
-{% endif %}
-<div style="overflow-y: scroll; height:300px; border-radius: 10px; padding: 30px;">
-    {% for tweet in all_tweets %}
-        <div style = "color: white; background-color: #007bff; border-radius: 10px; padding: 30px;">
-            <p style="white-space:pre-wrap">Date: {{ tweet.date_created }}</p>
-            {% if tweet.location %}
-                <p style="white-space:pre-wrap">Location: {{ tweet.location }}</p>
-            {% endif %}
-            <p style="white-space:pre-wrap" font='bold'>{{ tweet.text }}</p>
+
+    {% if all_tweets %}
+        <h2 style="margin-top: 100px; margin-bottom: 20px; text-align: center;"><b>{{ tweetTitle }}</b></h2>
+        <div style="overflow-y: scroll; height:350px; border: 3px solid white; border-radius: 10px; padding: 30px;">
+            {% for tweet in all_tweets %}
+                <div style = "color: white; background-color: #007bff; border-radius: 10px; padding: 30px;">
+                    <p style="white-space:pre-wrap">Date: {{ tweet.date_created }}</p>
+                    {% if tweet.location %}
+                        <p style="white-space:pre-wrap">Location: {{ tweet.location }}</p>
+                    {% endif %}
+                    <p style="white-space:pre-wrap" font='bold'>{{ tweet.text }}</p>
+                </div>
+                <br>
+        {% endfor %}
         </div>
-        <br>
-    {% endfor %}
+    {% else %}
+        <h2 style="margin-top: 100px; text-align: center;"><b>No tweet information at this time.</b></h2>
+    {% endif %}
+
+
+{% endif %}
+
+<div class="spinner-border"
+    style="width: 3rem; height: 3rem; position: fixed; top: 45%; left: 55%; margin-top: -50px; margin-left: -100px;"
+    role="status" id="loading">
+    <span class="sr-only">Loading...</span>
 </div>
 
-<div class="d-flex justify-content-center">
-    <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status" id="loading">
-        <span class="sr-only">Loading...</span>
-    </div>
-</div>
 
 {% endblock %}

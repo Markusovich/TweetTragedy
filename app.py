@@ -103,7 +103,7 @@ def get_tweets(searchWord, locationName, date1, date2, count):
                 pass
         else:
             if model_prediction(tweet._json['text']):
-                db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text'], location=tweet._json['place']['country']))
+                db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text']))
                 db2.session.commit()
 
 
