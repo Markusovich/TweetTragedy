@@ -25,11 +25,10 @@ class Tweets(db2.Model):
     id = db2.Column(db2.Integer, primary_key=True)
     date_created = db2.Column(db2.String(100), nullable=False)
     text = db2.Column(db2.String(300), nullable=False)
-    location = db2.Column(db2.String(100), nullable=True)
+    location = db2.Column(db2.String(300), nullable=True)
 
 from app import db2
 from app import Tweets
-db2.drop_all()
 db2.create_all()
 
 # Link to Simon's database in mongodb atlas
@@ -63,7 +62,7 @@ def model_prediction(text):
     return true > false
 
 
-def get_tweets(searchWord, location, date1, date2, count):
+def get_tweets(searchWord, locationName, date1, date2, count):
 
     searchWord += " -filter:retweets" + " -filter:replies"
 
@@ -77,20 +76,34 @@ def get_tweets(searchWord, location, date1, date2, count):
     client = MongoClient(MONGO_HOST)
     db = client.twitterdb
 
+    flag = 0
     # Iterate and print tweets
     for tweet in tweets:
-        if location:
-            if location in tweet._json['user']['location']:
-                if model_prediction(tweet._json['text']):
-                    db.tweets.insert_one(tweet._json)
-
-                    db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text'], location=tweet._json['user']['location']))
-                    db2.session.commit()
+        flag = 0
+        if locationName:
+            try:
+                if locationName in tweet._json['user']['location'] and flag == 0:
+                    if model_prediction(tweet._json['text']):
+                        db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text'], location=tweet._json['user']['location']))
+                        db2.session.commit()
+                        flag = 1
+                if locationName in tweet._json['place']['country'] and flag == 0:
+                    if model_prediction(tweet._json['text']):
+                        db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text'], location=tweet._json['place']['country']))
+                        db2.session.commit()
+                        flag = 1
+                if locationName in tweet._json['place']['name'] and flag == 0:
+                    if model_prediction(tweet._json['text']):
+                        db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text'], location=tweet._json['place']['name']))
+                        db2.session.commit()
+                        flag = 1
+                else:
+                    pass
+            except TypeError:
+                pass
         else:
             if model_prediction(tweet._json['text']):
-                db.tweets.insert_one(tweet._json)
-
-                db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text']))
+                db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text'], location=tweet._json['place']['country']))
                 db2.session.commit()
 
 
@@ -197,7 +210,8 @@ def home():
             p4.join()
 
         all_tweets = Tweets.query.order_by(Tweets.date_created).all()
-        tweetTitle = 'Tweets that may provide info to current state'
+        tweetTitle = 'Tweets that may provide info to current disaster state'
+        db2.drop_all()
 
         return render_template('home.html', all_tweets=all_tweets, tweetTitle=tweetTitle)
     else:

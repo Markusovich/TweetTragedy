@@ -3,10 +3,23 @@
 {% block head %}
 <title>Home</title>
 <style>
+    body {
+            background-image: url("https://wallpaperaccess.com/full/713555.jpg");
+            background-repeat: no-repeat;
+            background-size: 1700px 1000px;
+        }
     #loading {
         display: none;
     }
 </style>
+<script>
+    function loadingFunction() {
+        document.getElementById('loading').style.display = 'block';
+    }
+    function doneFunction() {
+        document.getElementById('loading').style.display = 'none';
+    }   
+</script>
 {% endblock %}
 
 {% block body %}
@@ -41,7 +54,7 @@
             </li>
         </ul>
         <form class="form-inline my-6 my-lg-0" action='/' method='POST'>
-            <select class="form-control mr-sm-2" type="date" name="daterange">
+            <select class="form-control mr-sm-2" type="date" name="daterange" value="{{ request.form.daterange }}">
                 <option class="dropdown-item" value="2" selected>Last Day</option>
                 <option class="dropdown-item" value="3">Last 2 Days</option>
                 <option class="dropdown-item" value="4">Last 3 Days</option>
@@ -51,39 +64,32 @@
                 <option class="dropdown-item" value="8">Last Week</option>
             </select>
             <input class="form-control mr-sm-2" type="searchLocation" name="searchLocation"
-                placeholder="Location (optional)" aria-label="SearchLocation">
+                placeholder="Location (optional)" aria-label="SearchLocation" value="{{ request.form.searchLocation }}">
             <input class="form-control mr-sm-2" type="searchDisaster" name="searchDisaster" placeholder="Disaster"
-                aria-label="SearchDisaster" required>
+                aria-label="SearchDisaster" value="{{ request.form.searchDisaster }}" required>
             <button onclick="loadingFunction()" onsubmit="doneFunction()" class="btn btn-outline-success my-2 my-sm-0"
-                type="submit">Search</button>
+                type="submit" action='/' method='POST'>Search</button>
         </form>
     </div>
 </nav>
 
-<script>
-    function loadingFunction() {
-        document.getElementById('loading').style.display = 'block';
-    }
-    function doneFunction() {
-        document.getElementById('loading').style.display = 'none';
-    }   
-</script>
-
-<div id="tweettext">
-    <br><br><br><br><br>
-    <h2><b>{{ tweetTitle }}</b></h2>
-{% for tweet in all_tweets %}
-    <hr>
-    <p style="white-space:pre-wrap">Date: {{ tweet.date_created }}</p>
-    {% if tweet.location %}
-        <p style="white-space:pre-wrap">Location: {{ tweet.location }}</p>
-    {% endif %}
-    <p style="white-space:pre-wrap"  font='bold'>{{ tweet.text }}</p>
-    <hr>
-{% endfor%}
+{% if tweetTitle %}
+<br><br><br><br>
+<h2><b>{{ tweetTitle }}</b></h2>
+{% endif %}
+<div style="overflow-y: scroll; height:300px; border-radius: 10px; padding: 30px;">
+    {% for tweet in all_tweets %}
+        <div style = "color: white; background-color: #007bff; border-radius: 10px; padding: 30px;">
+            <p style="white-space:pre-wrap">Date: {{ tweet.date_created }}</p>
+            {% if tweet.location %}
+                <p style="white-space:pre-wrap">Location: {{ tweet.location }}</p>
+            {% endif %}
+            <p style="white-space:pre-wrap" font='bold'>{{ tweet.text }}</p>
+        </div>
+        <br>
+    {% endfor %}
 </div>
 
-<br><br><br><br><br><br><br><br><br><br>
 <div class="d-flex justify-content-center">
     <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status" id="loading">
         <span class="sr-only">Loading...</span>
