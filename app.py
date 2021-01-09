@@ -117,6 +117,13 @@ def home():
         locationName = request.form['searchLocation']
         dateRange = request.form['daterange']
 
+        f = open('searchQueryRecords.txt', 'a')
+        if locationName:
+            f.write("Search for " + disasterName + " in " + locationName + " for the last " + dateRange + " days.\n")
+        else:
+            f.write("Search for " + disasterName + " for the last " + dateRange + " days.\n")
+        f.close()
+
         beginDate = datetime.today() - timedelta(days=int(dateRange))
         endDate = datetime.today()
         firstquarterDate = beginDate + (endDate - beginDate)/4
