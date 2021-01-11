@@ -11,15 +11,28 @@ import multiprocessing
 from datetime import datetime, timedelta
 import pickle
 from flask_sqlalchemy import SQLAlchemy
+import glob
 import os
+from dateutil.parser import parse
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
+if os.path.exists("tweets.db"):
+    print('deleted....')
+    os.remove("tweets.db")
 
 # Setting the connection to the database we will use
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tweets.db'
 # Setting the database var
 db2 = SQLAlchemy(app)
+
 
 class Tweets(db2.Model):
     id = db2.Column(db2.Integer, primary_key=True)
@@ -31,14 +44,17 @@ from app import db2
 from app import Tweets
 db2.create_all()
 
+for f in glob.glob('/static/*'):
+    os.remove(f)
+
 # Link to Simon's database in mongodb atlas
 MONGO_HOST = 'mongodb+srv://markusovich:Alexmom99@cluster0.enna3.mongodb.net/twitterdb?retryWrites=true&w=majority'
 # Created a database named "twitterdb" in custer0
 
-CONSUMER_KEY = "Duko8zJpuAMqAqOCGn3gLCdU7"
-CONSUMER_SECRET = "K116dYN4lj0Ol4DGUsiCMAH8Vhz5tL02k3OPERWifGmwDLJ2rm"
-ACCESS_TOKEN = "603210098-mkYuAJoQ5SptpC7laiENIFeyquRwCqPfA2XRTgt0"
-ACCESS_TOKEN_SECRET = "vMeTce7nJffxEFDOGyNHrCHYIYIARP0IVywjaHPhg6oN8"
+CONSUMER_KEY = "VqwMxvejCenz6f7agImTtyi0z"
+CONSUMER_SECRET = "JwEIf2ZIgmbEFOuXulpg8erDaYX1F0QTddlmR1UID8VS04hjAA"
+ACCESS_TOKEN = "1345892197816819712-H3Kx5dEXSawQDiTRu9xUaNF82lJhT6"
+ACCESS_TOKEN_SECRET = "Zg2CG6eGVAt917vqqoAQu3Hdl1O1uUnoxmwDKbkj4jd7Q"
 
 auth = tw.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
@@ -61,6 +77,17 @@ def model_prediction(text):
 
     return true > false
 
+def plot_df(df, x, y, title="", xlabel='Date', ylabel='Tweets per date'):
+    plt.figure()
+    plt.bar(x, y)
+    plt.gca().set(title=title, xlabel=xlabel, ylabel=ylabel)
+    plt.savefig('static/timeseries.png')
+
+def convertDate(jsonDate):
+    new_datetime = datetime.strftime(datetime.strptime(
+        jsonDate, '%a %b %d %H:%M:%S +0000 %Y'), '%Y-%m-%d')
+    return new_datetime
+
 
 def get_tweets(searchWord, locationName, date1, date2, count):
 
@@ -69,6 +96,7 @@ def get_tweets(searchWord, locationName, date1, date2, count):
     # Collect tweets
     tweets = tw.Cursor(api.search,
                        q=searchWord,
+                       result="popular",
                        lang="en",
                        since=date1,
                        until=date2).items(count)
@@ -84,17 +112,20 @@ def get_tweets(searchWord, locationName, date1, date2, count):
             try:
                 if locationName in tweet._json['user']['location'] and flag == 0:
                     if model_prediction(tweet._json['text']):
-                        db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text'], location=tweet._json['user']['location']))
+                        db2.session.add(Tweets(date_created=convertDate(
+                            tweet._json['created_at']), text=tweet._json['text'], location=tweet._json['user']['location']))
                         db2.session.commit()
                         flag = 1
                 if locationName in tweet._json['place']['country'] and flag == 0:
                     if model_prediction(tweet._json['text']):
-                        db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text'], location=tweet._json['place']['country']))
+                        db2.session.add(Tweets(date_created=convertDate(
+                            tweet._json['created_at']), text=tweet._json['text'], location=tweet._json['place']['country']))
                         db2.session.commit()
                         flag = 1
                 if locationName in tweet._json['place']['name'] and flag == 0:
                     if model_prediction(tweet._json['text']):
-                        db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text'], location=tweet._json['place']['name']))
+                        db2.session.add(Tweets(date_created=convertDate(
+                            tweet._json['created_at']), text=tweet._json['text'], location=tweet._json['place']['name']))
                         db2.session.commit()
                         flag = 1
                 else:
@@ -103,8 +134,19 @@ def get_tweets(searchWord, locationName, date1, date2, count):
                 pass
         else:
             if model_prediction(tweet._json['text']):
-                db2.session.add(Tweets(date_created=tweet._json['created_at'], text=tweet._json['text']))
+                db2.session.add(Tweets(date_created=convertDate(
+                    tweet._json['created_at']), text=tweet._json['text']))
                 db2.session.commit()
+
+            
+# prevent cached responses
+if app.config["DEBUG"]:
+    @app.after_request
+    def after_request(response):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, public, max-age=0"
+        response.headers["Expires"] = 0
+        response.headers["Pragma"] = "no-cache"
+        return response
 
 
 @app.route("/", methods=['GET', 'POST'])
@@ -119,9 +161,11 @@ def home():
 
         f = open('searchQueryRecords.txt', 'a')
         if locationName:
-            f.write("Search for " + disasterName + " in " + locationName + " for the last " + dateRange + " days.\n")
+            f.write("Search for " + disasterName + " in " +
+                    locationName + " for the last " + dateRange + " days.\n")
         else:
-            f.write("Search for " + disasterName + " for the last " + dateRange + " days.\n")
+            f.write("Search for " + disasterName +
+                    " for the last " + dateRange + " days.\n")
         f.close()
 
         beginDate = datetime.today() - timedelta(days=int(dateRange))
@@ -129,7 +173,7 @@ def home():
         firstquarterDate = beginDate + (endDate - beginDate)/4
         firstthirdDate = beginDate + (endDate - beginDate)/3
         middleDate = beginDate + (endDate - beginDate)/2
-        secondthirdDate = beginDate + (endDate - beginDate)/3 *2
+        secondthirdDate = beginDate + (endDate - beginDate)/3 * 2
         thirdquarterDate = beginDate + (endDate - beginDate)/4 * 3
 
         beginDate = beginDate.strftime('%Y-%m-%d')
@@ -216,9 +260,52 @@ def home():
             p3.join()
             p4.join()
 
+        # createTimeSeries(Tweets.query.with_entities(Tweets.date_created))
+        plt.rcParams.update({'figure.figsize': (10, 7), 'figure.dpi': 120})
+
+        freq = {}
+        for item in Tweets.query.with_entities(Tweets.date_created):
+            item = str(item).replace(',)', '')
+            item = item.replace('(', '')
+            if (item in freq):
+                freq[item] += 1
+            else:
+                freq[item] = 1
+
+        data = []
+        done = []
+        for item in Tweets.query.with_entities(Tweets.date_created):
+            item = str(item).replace(',)', '')
+            item = item.replace('(', '')
+            if item in done:
+                pass
+            else:
+                data.append([item, freq[item]])
+                done.append(item)
+        df = pd.DataFrame(data, columns=['date', 'value'])
+
+
+        i = 7
+        counter = datetime.today() - timedelta(days=int(i))
+        counter = "'" + counter.strftime('%Y-%m-%d') + "'"
+        today = "'" + datetime.today().strftime('%Y-%m-%d') + "'"
+
+        while counter != today:
+            if df['date'].str.contains(counter).any():
+                pass
+            else:
+                df2 = pd.DataFrame([[counter, 0]], columns=['date', 'value'])
+                df = df.append(df2, ignore_index=True)
+            i = i - 1
+            counter = datetime.today() - timedelta(days=int(i))
+            counter = "'" + counter.strftime('%Y-%m-%d') + "'"
+
+        df['date'] = pd.to_datetime(df['date'])
+
+        plot_df(df, x=df['date'], y=df.value, title='Time Series Visualization')
+
         all_tweets = Tweets.query.order_by(Tweets.date_created).all()
         tweetTitle = 'Tweets that may provide info to current disaster state'
-        db2.drop_all()
 
         return render_template('home.html', all_tweets=all_tweets, tweetTitle=tweetTitle)
     else:
