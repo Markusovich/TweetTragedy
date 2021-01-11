@@ -16,6 +16,14 @@
         display: none;
     }
 
+    #scrollarea-invalid {
+        overflow-y: scroll;
+        height: 350px;
+    }
+    #scrollarea-content{
+        min-height:101%;
+    }
+
 </style>
 <script>
     function loadingFunction() {
@@ -79,7 +87,7 @@
 
     {% if all_tweets %}
         <h2 style="margin-top: 100px; margin-bottom: 20px; text-align: center;"><b>{{ tweetTitle }}</b></h2>
-        <div style="overflow-y: scroll; height:350px; background-color: black; border: 5px solid blue; border-radius: 10px; padding: 30px; overflow: scroll;">
+        <div style="overflow-y: scroll; height:350px; background-color: black; border: 5px solid blue; border-radius: 10px; padding: 30px;">
             {% for tweet in all_tweets %}
                 <div style = "color: white; background-color: #007bff; border: 1px solid white; border-radius: 10px; padding: 30px;">
                     <p style="white-space:pre-wrap">Date: {{ tweet.date_created }}</p>
