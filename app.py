@@ -23,16 +23,9 @@ import matplotlib
 matplotlib.use('Agg')
 
 app = Flask(__name__, static_url_path='/static')
-
-if os.path.exists("tweets.db"):
-    print('deleted....')
-    os.remove("tweets.db")
-
 # Setting the connection to the database we will use
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tweets.db'
-# Setting the database var
 db2 = SQLAlchemy(app)
-
 
 class Tweets(db2.Model):
     id = db2.Column(db2.Integer, primary_key=True)
@@ -41,8 +34,12 @@ class Tweets(db2.Model):
     location = db2.Column(db2.String(300), nullable=True)
 
 from app import db2
-from app import Tweets
 db2.create_all()
+from app import Tweets
+
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 for f in glob.glob('/static/*'):
     os.remove(f)
@@ -50,7 +47,7 @@ for f in glob.glob('/static/*'):
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 # Link to Simon's database in mongodb atlas
-MONGO_HOST = 'mongodb+srv://markusovich:Alexmom99@cluster0.enna3.mongodb.net/twitterdb?retryWrites=true&w=majority'
+#MONGO_HOST = 'mongodb+srv://markusovich:Alexmom99@cluster0.enna3.mongodb.net/twitterdb?retryWrites=true&w=majority'
 # Created a database named "twitterdb" in custer0
 
 CONSUMER_KEY = "VqwMxvejCenz6f7agImTtyi0z"
@@ -103,8 +100,8 @@ def get_tweets(searchWord, locationName, date1, date2, count):
                        since=date1,
                        until=date2).items(count)
 
-    client = MongoClient(MONGO_HOST)
-    db = client.twitterdb
+    #client = MongoClient(MONGO_HOST)
+    #db = client.twitterdb
 
     flag = 0
     # Iterate and print tweets
@@ -154,6 +151,9 @@ if app.config["DEBUG"]:
 @app.route("/", methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
+
+        if os.path.getsize('tweets.db') > 0:
+            open("tweets.db", "w").close()
 
         MONGO_HOST = 'mongodb+srv://markusovich:Alexmom99@cluster0.enna3.mongodb.net/twitterdb?retryWrites=true&w=majority'
 
@@ -308,6 +308,8 @@ def home():
 
         all_tweets = Tweets.query.order_by(Tweets.date_created).all()
         tweetTitle = 'Tweets that may provide info to current disaster state'
+
+        db2.drop_all()
 
         return render_template('home.html', all_tweets=all_tweets, tweetTitle=tweetTitle)
     else:
