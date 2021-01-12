@@ -16,4 +16,3 @@ Receive valuable information-filled tweets in real time!
 View time series on tweets!
 [![Screen-Shot-2021-01-11-at-7-12-23-PM.png](https://i.postimg.cc/P5d5gCC2/Screen-Shot-2021-01-11-at-7-12-23-PM.png)](https://postimg.cc/sv0zSD9h)
 \
-\
