@@ -47,6 +47,8 @@ db2.create_all()
 for f in glob.glob('/static/*'):
     os.remove(f)
 
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
 # Link to Simon's database in mongodb atlas
 MONGO_HOST = 'mongodb+srv://markusovich:Alexmom99@cluster0.enna3.mongodb.net/twitterdb?retryWrites=true&w=majority'
 # Created a database named "twitterdb" in custer0
