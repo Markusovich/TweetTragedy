@@ -2,8 +2,6 @@
 
 The goal of this project is to create a tool that leverages Twitter as a social sensor to collect, analyze and visualize disaster related tweets.\
 \
-Link: https://tweet-tragedy.herokuapp.com/
-\
 \
 Search for natural disaster info in a specified area in the last week!
 [![Screen-Shot-2021-01-11-at-7-12-48-PM.png](https://i.postimg.cc/CxT2v866/Screen-Shot-2021-01-11-at-7-12-48-PM.png)](https://postimg.cc/Vdg4vJwj)
