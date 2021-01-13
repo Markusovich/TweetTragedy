@@ -23,22 +23,6 @@ import matplotlib
 matplotlib.use('Agg')
 
 app = Flask(__name__, static_url_path='/static')
-# Setting the connection to the database we will use
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tweets.db'
-db2 = SQLAlchemy(app)
-
-class Tweets(db2.Model):
-    id = db2.Column(db2.Integer, primary_key=True)
-    date_created = db2.Column(db2.String(100), nullable=False)
-    text = db2.Column(db2.String(300), nullable=False)
-    location = db2.Column(db2.String(300), nullable=True)
-
-from app import db2
-db2.create_all()
-from app import Tweets
-
-
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
 for f in glob.glob('/static/*'):
@@ -47,8 +31,10 @@ for f in glob.glob('/static/*'):
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 # Link to Simon's database in mongodb atlas
-#MONGO_HOST = 'mongodb+srv://markusovich:Alexmom99@cluster0.enna3.mongodb.net/twitterdb?retryWrites=true&w=majority'
+MONGO_HOST = 'mongodb+srv://markusovich:Alexmom99@cluster0.enna3.mongodb.net/twitterdb?retryWrites=true&w=majority'
 # Created a database named "twitterdb" in custer0
+client = MongoClient(MONGO_HOST)
+db = client.twitterdb
 
 CONSUMER_KEY = "VqwMxvejCenz6f7agImTtyi0z"
 CONSUMER_SECRET = "JwEIf2ZIgmbEFOuXulpg8erDaYX1F0QTddlmR1UID8VS04hjAA"
@@ -100,9 +86,6 @@ def get_tweets(searchWord, locationName, date1, date2, count):
                        since=date1,
                        until=date2).items(count)
 
-    #client = MongoClient(MONGO_HOST)
-    #db = client.twitterdb
-
     flag = 0
     # Iterate and print tweets
     for tweet in tweets:
@@ -111,21 +94,21 @@ def get_tweets(searchWord, locationName, date1, date2, count):
             try:
                 if locationName in tweet._json['user']['location'] and flag == 0:
                     if model_prediction(tweet._json['text']):
-                        db2.session.add(Tweets(date_created=convertDate(
-                            tweet._json['created_at']), text=tweet._json['text'], location=tweet._json['user']['location']))
-                        db2.session.commit()
+                        print('pass')
+                        db.tweetDB.insert_one({ "created_at": convertDate(tweet._json['created_at']), "text": tweet._json['text'], "location": tweet._json['user']['location']})
+                        print('pass')
                         flag = 1
                 if locationName in tweet._json['place']['country'] and flag == 0:
                     if model_prediction(tweet._json['text']):
-                        db2.session.add(Tweets(date_created=convertDate(
-                            tweet._json['created_at']), text=tweet._json['text'], location=tweet._json['place']['country']))
-                        db2.session.commit()
+                        print('pass')
+                        db.tweetDB.insert_one({ "created_at": convertDate(tweet._json['created_at']), "text": tweet._json['text'], "location": tweet._json['place']['country']})
+                        print('pass')
                         flag = 1
                 if locationName in tweet._json['place']['name'] and flag == 0:
                     if model_prediction(tweet._json['text']):
-                        db2.session.add(Tweets(date_created=convertDate(
-                            tweet._json['created_at']), text=tweet._json['text'], location=tweet._json['place']['name']))
-                        db2.session.commit()
+                        print('pass')
+                        db.tweetDB.insert_one({ "created_at": convertDate(tweet._json['created_at']), "text": tweet._json['text'], "location": tweet._json['place']['name']})
+                        print('pass')
                         flag = 1
                 else:
                     pass
@@ -133,9 +116,7 @@ def get_tweets(searchWord, locationName, date1, date2, count):
                 pass
         else:
             if model_prediction(tweet._json['text']):
-                db2.session.add(Tweets(date_created=convertDate(
-                    tweet._json['created_at']), text=tweet._json['text']))
-                db2.session.commit()
+                db.tweetDB.insert_one({ "created_at": convertDate(tweet._json['created_at']), "text": tweet._json['text']})
 
             
 # prevent cached responses
@@ -152,10 +133,7 @@ if app.config["DEBUG"]:
 def home():
     if request.method == 'POST':
 
-        if os.path.getsize('tweets.db') > 0:
-            open("tweets.db", "w").close()
-
-        MONGO_HOST = 'mongodb+srv://markusovich:Alexmom99@cluster0.enna3.mongodb.net/twitterdb?retryWrites=true&w=majority'
+        db.tweetDB.remove({})
 
         disasterName = request.form['searchDisaster']
         locationName = request.form['searchLocation']
@@ -262,28 +240,24 @@ def home():
             p3.join()
             p4.join()
 
-        # createTimeSeries(Tweets.query.with_entities(Tweets.date_created))
         plt.rcParams.update({'figure.figsize': (10, 7), 'figure.dpi': 120})
 
         freq = {}
-        for item in Tweets.query.with_entities(Tweets.date_created):
-            item = str(item).replace(',)', '')
-            item = item.replace('(', '')
-            if (item in freq):
-                freq[item] += 1
+        for item in db.tweetDB.find( {} ):
+            item['created_at']
+            if (item['created_at'] in freq):
+                freq[item['created_at']] += 1
             else:
-                freq[item] = 1
+                freq[item['created_at']] = 1
 
         data = []
         done = []
-        for item in Tweets.query.with_entities(Tweets.date_created):
-            item = str(item).replace(',)', '')
-            item = item.replace('(', '')
+        for item in db.tweetDB.find( {} ):
             if item in done:
                 pass
             else:
-                data.append([item, freq[item]])
-                done.append(item)
+                data.append([item['created_at'], freq[item['created_at']]])
+                done.append(item['created_at'])
         df = pd.DataFrame(data, columns=['date', 'value'])
 
 
@@ -306,10 +280,8 @@ def home():
 
         plot_df(df, x=df['date'], y=df.value, title='Time Series Visualization')
 
-        all_tweets = Tweets.query.order_by(Tweets.date_created).all()
+        all_tweets = db.tweetDB.find( {} )
         tweetTitle = 'Tweets that may provide info to current disaster state'
-
-        db2.drop_all()
 
         return render_template('home.html', all_tweets=all_tweets, tweetTitle=tweetTitle)
     else:

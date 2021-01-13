@@ -90,11 +90,11 @@
         <div style="overflow-y: scroll; height:350px; background-color: black; border: 5px solid blue; border-radius: 10px; padding: 30px;">
             {% for tweet in all_tweets %}
                 <div style = "color: white; background-color: #007bff; border: 1px solid white; border-radius: 10px; padding: 30px;">
-                    <p style="white-space:pre-wrap">Date: {{ tweet.date_created }}</p>
-                    {% if tweet.location %}
-                        <p style="white-space:pre-wrap">Location: {{ tweet.location }}</p>
+                    <p style="white-space:pre-wrap">Date: {{ tweet['created_at'] }}</p>
+                    {% if tweet['location'] %}
+                        <p style="white-space:pre-wrap">Location: {{ tweet['location'] }}</p>
                     {% endif %}
-                    <p style="white-space:pre-wrap" font='bold'>{{ tweet.text }}</p>
+                    <p style="white-space:pre-wrap" font='bold'>{{ tweet['text'] }}</p>
                 </div>
                 <br>
         {% endfor %}

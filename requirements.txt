@@ -19,6 +19,7 @@ Flask-SQLAlchemy==2.4.4
 gunicorn==20.0.4
 idna==2.10
 ipykernel==5.3.4
+ipython==7.18.1
 ipython-genutils==0.2.0
 isort==5.5.3
 itsdangerous==1.1.0
@@ -39,6 +40,7 @@ parso==0.7.1
 pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==8.1.0
+pipenv==2020.11.15
 pipreqs==0.4.10
 prompt-toolkit==3.0.7
 ptyprocess==0.6.0
@@ -63,9 +65,11 @@ SQLAlchemy==1.3.22
 threadpoolctl==2.1.0
 toml==0.10.1
 tornado==6.0.4
+traitlets==5.0.4
 tweepy==3.9.0
 urllib3==1.26.2
 virtualenv==20.2.2
+virtualenv-clone==0.5.4
 wcwidth==0.2.5
 Werkzeug==1.0.1
 wrapt==1.12.1
