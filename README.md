@@ -2,8 +2,7 @@
 
 The goal of this project is to create a tool that leverages Twitter as a social sensor to collect, analyze and visualize disaster related tweets.
 \
-\
-To run code on localhost, pip install all modules and run command 'flask run'
+Link: https://tweet-tragedy.herokuapp.com/
 \
 \
 Search for natural disaster info in a specified area in the last week!
