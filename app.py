@@ -20,6 +20,7 @@ import seaborn as sns
 import numpy as np
 import pandas as pd
 import matplotlib
+import folium
 matplotlib.use('Agg')
 
 app = Flask(__name__, static_url_path='/static')
@@ -62,16 +63,23 @@ def model_prediction(text):
 
     return true > false
 
+
 def plot_df(df, x, y, title="", xlabel='Date', ylabel='Tweets per date'):
     plt.figure()
     plt.bar(x, y)
     plt.gca().set(title=title, xlabel=xlabel, ylabel=ylabel)
     plt.savefig('static/timeseries.png')
 
+
 def convertDate(jsonDate):
     new_datetime = datetime.strftime(datetime.strptime(
         jsonDate, '%a %b %d %H:%M:%S +0000 %Y'), '%Y-%m-%d')
     return new_datetime
+
+
+@app.route('/map')
+def loadmap():
+    return render_template('map.html')
 
 
 def get_tweets(searchWord, locationName, date1, date2, count):
@@ -87,27 +95,33 @@ def get_tweets(searchWord, locationName, date1, date2, count):
                        until=date2).items(count)
 
     flag = 0
-    # Iterate and print tweets
     for tweet in tweets:
         flag = 0
+        #if model_prediction(tweet._json['text']):
+        if tweet._json['geo']:
+            db.tweetDB.insert_one(tweet._json)
+        '''
         if locationName:
             try:
                 if locationName in tweet._json['user']['location'] and flag == 0:
                     if model_prediction(tweet._json['text']):
                         print('pass')
-                        db.tweetDB.insert_one({ "created_at": convertDate(tweet._json['created_at']), "text": tweet._json['text'], "location": tweet._json['user']['location']})
+                        db.tweetDB.insert_one({"created_at": convertDate(
+                            tweet._json['created_at']), "text": tweet._json['text'], "location": tweet._json['user']['location']})
                         print('pass')
                         flag = 1
                 if locationName in tweet._json['place']['country'] and flag == 0:
                     if model_prediction(tweet._json['text']):
                         print('pass')
-                        db.tweetDB.insert_one({ "created_at": convertDate(tweet._json['created_at']), "text": tweet._json['text'], "location": tweet._json['place']['country']})
+                        db.tweetDB.insert_one({"created_at": convertDate(
+                            tweet._json['created_at']), "text": tweet._json['text'], "location": tweet._json['place']['country']})
                         print('pass')
                         flag = 1
                 if locationName in tweet._json['place']['name'] and flag == 0:
                     if model_prediction(tweet._json['text']):
                         print('pass')
-                        db.tweetDB.insert_one({ "created_at": convertDate(tweet._json['created_at']), "text": tweet._json['text'], "location": tweet._json['place']['name']})
+                        db.tweetDB.insert_one({"created_at": convertDate(
+                            tweet._json['created_at']), "text": tweet._json['text'], "location": tweet._json['place']['name']})
                         print('pass')
                         flag = 1
                 else:
@@ -116,9 +130,11 @@ def get_tweets(searchWord, locationName, date1, date2, count):
                 pass
         else:
             if model_prediction(tweet._json['text']):
-                db.tweetDB.insert_one({ "created_at": convertDate(tweet._json['created_at']), "text": tweet._json['text']})
+                db.tweetDB.insert_one({"created_at": convertDate(
+                    tweet._json['created_at']), "text": tweet._json['text']})
+        '''
 
-            
+
 # prevent cached responses
 if app.config["DEBUG"]:
     @app.after_request
@@ -240,10 +256,22 @@ def home():
             p3.join()
             p4.join()
 
+        # Loads a folium map
+        m = folium.Map(location=[0, 0], zoom_start=2)
+
+        for tweet in db.tweetDB.find({}):
+            folium.Marker(
+                location=[tweet['geo']['coordinates'][0], tweet['geo']['coordinates'][1]],
+                tooltip=tweet['text'],
+                icon=folium.Icon(color="red")
+            ).add_to(m)
+        m.save("templates/map.html")
+
+        '''
         plt.rcParams.update({'figure.figsize': (10, 7), 'figure.dpi': 120})
 
         freq = {}
-        for item in db.tweetDB.find( {} ):
+        for item in db.tweetDB.find({}):
             item['created_at']
             if (item['created_at'] in freq):
                 freq[item['created_at']] += 1
@@ -252,14 +280,13 @@ def home():
 
         data = []
         done = []
-        for item in db.tweetDB.find( {} ):
+        for item in db.tweetDB.find({}):
             if item in done:
                 pass
             else:
                 data.append([item['created_at'], freq[item['created_at']]])
                 done.append(item['created_at'])
         df = pd.DataFrame(data, columns=['date', 'value'])
-
 
         i = 7
         counter = datetime.today() - timedelta(days=int(i))
@@ -278,9 +305,11 @@ def home():
 
         df['date'] = pd.to_datetime(df['date'])
 
-        plot_df(df, x=df['date'], y=df.value, title='Time Series Visualization')
+        plot_df(df, x=df['date'], y=df.value,
+                title='Time Series Visualization')
+        '''
 
-        all_tweets = db.tweetDB.find( {} )
+        all_tweets = db.tweetDB.find({})
         tweetTitle = 'Tweets that may provide info to current disaster state'
 
         return render_template('home.html', all_tweets=all_tweets, tweetTitle=tweetTitle)

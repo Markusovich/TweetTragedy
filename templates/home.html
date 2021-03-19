@@ -7,10 +7,10 @@
         margin: auto;
         background: url("https://wallpaperaccess.com/full/713555.jpg") no-repeat center fixed;
         background-size: cover;
-		margin: 0;
+        margin: 0;
         padding: 0;
     }
-    
+
 
     #loading {
         display: none;
@@ -20,10 +20,10 @@
         overflow-y: scroll;
         height: 350px;
     }
-    #scrollarea-content{
-        min-height:101%;
-    }
 
+    #scrollarea-content {
+        min-height: 101%;
+    }
 </style>
 <script>
     function loadingFunction() {
@@ -77,37 +77,48 @@
                 placeholder="Location (optional)" aria-label="SearchLocation" value="{{ request.form.searchLocation }}">
             <input class="form-control mr-sm-2" type="searchDisaster" name="searchDisaster" placeholder="Disaster"
                 aria-label="SearchDisaster" value="{{ request.form.searchDisaster }}" required>
-            <button onclick="loadingFunction()" class="btn btn-outline-success my-2 my-sm-0"
-                type="submit" action='/' method='POST'>Search</button>
+            <button onclick="loadingFunction()" class="btn btn-outline-success my-2 my-sm-0" type="submit" action='/'
+                method='POST'>Search</button>
         </form>
     </div>
 </nav>
 
 {% if tweetTitle %}
+<h1 style="color: white; text-shadow: black 0px 0px 10px; text-align: center;">Map</h1>
+<div style="position: absolute; left: 50%; -webkit-transform: translate(-50%); transform: translate(-50%);">
+    <iframe src="{{ url_for('loadmap') }}" height="600" width="1000" title="Iframe Example"></iframe>
+</div>
+{% endif %}
 
-    {% if all_tweets %}
-        <h2 style="margin-top: 100px; margin-bottom: 20px; text-align: center;"><b>{{ tweetTitle }}</b></h2>
-        <div style="overflow-y: scroll; height:350px; background-color: black; border: 5px solid blue; border-radius: 10px; padding: 30px;">
-            {% for tweet in all_tweets %}
-                <div style = "color: white; background-color: #007bff; border: 1px solid white; border-radius: 10px; padding: 30px;">
-                    <p style="white-space:pre-wrap">Date: {{ tweet['created_at'] }}</p>
-                    {% if tweet['location'] %}
-                        <p style="white-space:pre-wrap">Location: {{ tweet['location'] }}</p>
-                    {% endif %}
-                    <p style="white-space:pre-wrap" font='bold'>{{ tweet['text'] }}</p>
-                </div>
-                <br>
-        {% endfor %}
-        </div>
-        <h2 style="margin-top: 80px; margin-bottom: 20px; text-align: center;"><b>Time Series</b></h2>
-        <div style="text-align: center;">
-            <img src="{{ url_for('static', filename='timeseries.png') }}" alt="" width="1000" height="700" style="border-radius: 20px; margin-bottom: 140px;">
-        </div>
-    {% else %}
-        <h2 style="margin-top: 100px; text-align: center;"><b>No tweet information at this time.</b></h2>
-    {% endif %}
+<!--
+{% if tweetTitle %}
+
+{% if all_tweets %}
+<h2 style="margin-top: 100px; margin-bottom: 20px; text-align: center;"><b>{{ tweetTitle }}</b></h2>
+<div
+    style="overflow-y: scroll; height:350px; background-color: black; border: 5px solid blue; border-radius: 10px; padding: 30px;">
+    {% for tweet in all_tweets %}
+    <div style="color: white; background-color: #007bff; border: 1px solid white; border-radius: 10px; padding: 30px;">
+        <p style="white-space:pre-wrap">Date: {{ tweet['created_at'] }}</p>
+        {% if tweet['location'] %}
+        <p style="white-space:pre-wrap">Location: {{ tweet['location'] }}</p>
+        {% endif %}
+        <p style="white-space:pre-wrap" font='bold'>{{ tweet['text'] }}</p>
+    </div>
+    <br>
+    {% endfor %}
+</div>
+<h2 style="margin-top: 80px; margin-bottom: 20px; text-align: center;"><b>Time Series</b></h2>
+<div style="text-align: center;">
+    <img src="{{ url_for('static', filename='timeseries.png') }}" alt="" width="1000" height="700"
+        style="border-radius: 20px; margin-bottom: 140px;">
+</div>
+{% else %}
+<h2 style="margin-top: 100px; text-align: center;"><b>No tweet information at this time.</b></h2>
+{% endif %}
 
 {% endif %}
+-->
 
 <div class="spinner-border"
     style="width: 3rem; height: 3rem; position: fixed; top: 45%; left: 55%; margin-top: -50px; margin-left: -100px;"
